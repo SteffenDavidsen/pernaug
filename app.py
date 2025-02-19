@@ -24,6 +24,7 @@ def break_text(text, max_len=15):
     """Break long text into multiple lines."""
     return '\n'.join([text[i:i + max_len] for i in range(0, len(text), max_len)])
 
+st.set_page_config(layout="wide")
 
 st.title("Tactic Matrix Generator")
 
