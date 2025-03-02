@@ -81,16 +81,38 @@ if uploaded_file is not None:
                 # Create the matrix with an extra "Weight" row at the top.
                 matrix = pd.DataFrame(index=["Weight"] + team_A_display, columns=team_B_display)
 
-                # --- Weight Input Section ---
+                # --- Weight Input Section (Smalle bokse + Sum + Afrunding) ---
                 st.write("Enter weight for each Team B tactic (leave blank for zero):")
-                weights = {tactic: float(st.text_input(f"Weight for {tactic}", value="") or 0.0) for tactic in
-                           team_B_display}
+
+                columns = st.columns(len(team_B_display))  # Opret én kolonne pr. tactic
+
+                weights = {}
+                for col, tactic in zip(columns, team_B_display):
+                    with col:
+                        input_val = st.text_input(f"{tactic}", value="", key=tactic)
+                        try:
+                            weights[tactic] = round(float(input_val), 1) if input_val.strip() else 0.0
+                        except ValueError:
+                            weights[tactic] = 0.0
+
+                # Beregn summen af vægtene (afrundet til 1 decimal)
+                total_weight = round(sum(weights.values()), 1)
+
+                # Vis total sum nedenunder
+                st.markdown(f"**Total Weight: {total_weight:.1f}**")
+
+                # Vis advarsel hvis summen ikke er "cirka" 100 (±0.1 tolerance)
+                if abs(total_weight - 100) > 0.1:
+                    st.error("⚠️ The total weight must sum to 100!")
+                else:
+                    st.success("✅ The total weight is correctly set.")
+                # Opdater vægtning i matrix
                 matrix.loc["Weight"] = [weights[tactic] for tactic in team_B_display]
 
                 # --- Move the Selector Below Weight Input ---
                 calculation_mode = st.radio(
                     "Select Calculation Mode",
-                    options=["xP (Expected Points)", "Chance of Not Losing"],
+                    options=["xP (Expected Points)", "Chance of not losing"],
                     index=0  # Default to xP
                 )
 
